@@ -35,4 +35,17 @@ public static class SystemConfigExtend
         return resultId;
     }
 
+    public static void SetSavedDataFloat(this InputField inp, string savedString, float defValue, Action<float> changedToDo){
+        float runTime = SystemConfig.Instance.GetData<float>(savedString, defValue);
+        inp.onValueChanged.AddListener(x => {
+            float result = defValue;
+            if(!float.TryParse(x, out result))
+                return;
+
+            SystemConfig.Instance.SaveData(savedString, result);
+            changedToDo?.Invoke(result);
+        });
+        inp.text = runTime.ToString("0.00");
+    }
+
 }

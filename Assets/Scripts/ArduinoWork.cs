@@ -10,6 +10,7 @@ public class ArduinoWork : MonoBehaviour
     public string Msg_Send_ToJump;
     public string Msg_Send_ToBack;
     public ArduinoInteractive arduinoInteractive;
+    public AnimWorker animWorker;
 
     public Action OnStageReady;
     public Action OnAnimStartRun;
@@ -17,16 +18,20 @@ public class ArduinoWork : MonoBehaviour
     void Start()
     {
         arduinoInteractive.OnRecieveData += RecievedSignals;
+        animWorker.OnAnimJump += SendJumpMsg;
+        animWorker.OnStageBlack += SendBack;
     }
 
     
     // 爆破音效
     void SendJumpMsg(){
+        Debug.Log($"Send message to arduino: {Msg_Send_ToJump}");
         arduinoInteractive.SendData(Msg_Send_ToJump);
     }
 
     // 黑幕降臨, 提示裝置該歸位了
     void SendBack(){
+        Debug.Log($"Send message to arduino: {Msg_Send_ToBack}");
         arduinoInteractive.SendData(Msg_Send_ToBack);
     }
 

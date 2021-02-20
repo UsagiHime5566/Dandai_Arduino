@@ -16,6 +16,14 @@ public class SerialHelper : MonoBehaviour
     public Button BTN_Restart;
     public Text TXT_State;
 
+    [Header("模擬測試")]
+    public string messageToRecieve;
+
+    [EasyButtons.Button("Emu Recieve")]
+    void EmuRecieved(){
+        arduinoInteractive.OnRecieveData?.Invoke(messageToRecieve);
+    }
+
     ArduinoInteractive arduinoInteractive;
     string[] baudRate = {"300", "600", "1200", "2400", "4800", "9600", "14400", "19200", "28800", "31250", "38400", "57600", "115200"};
 
