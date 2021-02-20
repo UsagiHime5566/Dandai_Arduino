@@ -41,8 +41,7 @@ public class AnimWorker : MonoBehaviour
             anim.SetTrigger("Jump");
         }
         if(Input.GetKeyDown(KeyCode.Space)){
-            anim.SetTrigger("Recover");
-            body.position = Vector3.zero;
+            ScreenToLight();
         }
     }
 
