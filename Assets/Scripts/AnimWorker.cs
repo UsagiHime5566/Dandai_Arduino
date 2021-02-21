@@ -12,6 +12,7 @@ public class AnimWorker : MonoBehaviour
     public Transform targetPoint2;
     public float duration = 5;
     public float durationJump = 0.5f;
+    public AudioSource JumpAudio;
 
     public Transform cam;
 
@@ -48,6 +49,7 @@ public class AnimWorker : MonoBehaviour
     void AnimRun(){
         anim.SetTrigger("Run");
         body.DOMove(targetPoint.position, duration).SetEase(Ease.Linear).OnComplete(delegate {
+            JumpAudio.Play();
             anim.SetTrigger("Jump");
             OnAnimJump?.Invoke();
 

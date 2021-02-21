@@ -36,7 +36,7 @@ public static class SystemConfigExtend
     }
 
     public static void SetSavedDataFloat(this InputField inp, string savedString, float defValue, Action<float> changedToDo){
-        float runTime = SystemConfig.Instance.GetData<float>(savedString, defValue);
+        float val = SystemConfig.Instance.GetData<float>(savedString, defValue);
         inp.onValueChanged.AddListener(x => {
             float result = defValue;
             if(!float.TryParse(x, out result))
@@ -45,7 +45,15 @@ public static class SystemConfigExtend
             SystemConfig.Instance.SaveData(savedString, result);
             changedToDo?.Invoke(result);
         });
-        inp.text = runTime.ToString("0.00");
+        inp.text = val.ToString("0.00");
     }
 
+    public static void SetSavedDataFloat(this Slider sld, string savedString, float defValue, Action<float> changedToDo){
+        float val = SystemConfig.Instance.GetData<float>(savedString, defValue);
+        sld.onValueChanged.AddListener(x => {
+            SystemConfig.Instance.SaveData(savedString, x);
+            changedToDo?.Invoke(x);
+        });
+        sld.value = val;
+    }
 }
