@@ -68,7 +68,13 @@ public class ArduinoInteractive : MonoBehaviour
 		
 		if( arduinoPort.IsOpen == false )
 		{
-			arduinoPort.Open();
+			try {
+				arduinoPort.Open();
+			} catch(System.Exception e){
+				Debug.LogError(e.Message.ToString());
+				ArduinoPortState = false;
+				return false;
+			}
 
 			if(recThread != null)
 				recThread.Abort();
@@ -76,7 +82,7 @@ public class ArduinoInteractive : MonoBehaviour
 			recThread = new Thread (RecieveThread);
 			recThread.Start ();
 
-			Debug.Log( "Open port sucessful!!" );
+			Debug.Log( $"Open port '{comName}' sucessful!!" );
 		}
 		else
 		{

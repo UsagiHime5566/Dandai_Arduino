@@ -15,9 +15,13 @@ public class SerialHelper : MonoBehaviour
     public Dropdown DD_Serial;
     public Button BTN_Restart;
     public Text TXT_State;
+    public Text TXT_Debug;
 
     [Header("模擬測試")]
     public string messageToRecieve;
+    Queue<string> queueMessage;
+    int maxQueueNum = 5;
+
 
     [EasyButtons.Button("Emu Recieve")]
     void EmuRecieved(){
@@ -29,6 +33,7 @@ public class SerialHelper : MonoBehaviour
 
     void Awake(){
         arduinoInteractive = GetComponent<ArduinoInteractive>();
+        queueMessage = new Queue<string>();
     }
 
     IEnumerator Start()
@@ -52,11 +57,33 @@ public class SerialHelper : MonoBehaviour
             RestartArduino();
         });
 
+
+        // Debug message
+        if(TXT_Debug){
+            TXT_Debug.text = "";
+            arduinoInteractive.OnRecieveData += x => {
+                queueMessage.Enqueue(x);
+                if(queueMessage.Count > maxQueueNum){
+                    queueMessage.Dequeue();
+                }
+
+                TXT_Debug.text = "";
+                foreach (var item in queueMessage)
+                {
+                    TXT_Debug.text += item + "\n";
+                }
+            };
+        }
+
         yield return new WaitForSeconds(10);
 
         arduinoInteractive.StartSerial();
         BTN_Restart.interactable = true;
         StartCoroutine(CheckStatus());
+
+        yield return new WaitForSeconds(10);
+        
+        arduinoInteractive.SendData("c");
     }
 
     async void RestartArduino(){
@@ -64,6 +91,8 @@ public class SerialHelper : MonoBehaviour
         await Task.Delay(5000);
         if(this == null) return;
         arduinoInteractive.StartSerial();
+        await Task.Delay(5000);
+        arduinoInteractive.SendData("c");
     }
 
     WaitForSeconds wait = new WaitForSeconds(1.0f);

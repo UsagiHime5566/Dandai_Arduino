@@ -13,6 +13,7 @@ public class AnimWorker : MonoBehaviour
     public float duration = 5;
     public float durationJump = 0.5f;
     public AudioSource JumpAudio;
+    public MeshRenderer Ground;
 
     public Transform cam;
 
@@ -56,9 +57,11 @@ public class AnimWorker : MonoBehaviour
             body.DOMove(targetPoint2.position, durationJump).OnComplete(delegate {
                 StartCoroutine(EndAnimation());
             });
-            cam.DORotate(new Vector3(-33, 0, 0), durationJump).OnComplete(delegate {
-                cam.DORotate(new Vector3(0, 0, 0), durationJump * 0.5f);
+            cam.DORotate(new Vector3(-20, 0, 0), durationJump / 2).SetEase(Ease.Linear).OnComplete(delegate {
+                cam.DORotate(new Vector3(0, 0, 0), durationJump / 2);
             });
+
+            Ground.material.DOFade(0, durationJump);
         });
     }
 
@@ -77,5 +80,6 @@ public class AnimWorker : MonoBehaviour
         anim.SetTrigger("Recover");
         body.position = Vector3.zero;
         BlackScreen.DOFade(0, fadeTime);
+        Ground.material.DOFade(1, fadeTime);
     }
 }
