@@ -1971,6 +1971,8 @@ MonoBehaviour:
   Msg_Recv_ToRun: y
   Msg_Send_ToJump: a
   Msg_Send_ToBack: b
+  Msg_Send_HandShake: c
+  Msg_Recv_HandShake: need assign 'c'
   arduinoInteractive: {fileID: 1379167738}
   animWorker: {fileID: 1855114029}
 --- !u!1 &1551620429

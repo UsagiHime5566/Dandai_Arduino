@@ -9,6 +9,8 @@ public class ArduinoWork : MonoBehaviour
     public string Msg_Recv_ToRun;
     public string Msg_Send_ToJump;
     public string Msg_Send_ToBack;
+    public string Msg_Send_HandShake;
+    public string Msg_Recv_HandShake;
     public ArduinoInteractive arduinoInteractive;
     public AnimWorker animWorker;
 
@@ -44,6 +46,10 @@ public class ArduinoWork : MonoBehaviour
         // 舞台準備就緒, 黑幕可以拉開了
         if(msg == Msg_Recv_Ready){
             OnStageReady?.Invoke();
+        }
+
+        if(msg == Msg_Recv_HandShake){
+            arduinoInteractive.SendData(Msg_Send_HandShake);
         }
     }
 }
