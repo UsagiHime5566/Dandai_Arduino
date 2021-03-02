@@ -18,6 +18,8 @@ const int GameStep_Running = 1;
 
 int gameStep = 0;
 bool isHandShake = false;
+int unstock = 0;
+const int unstockMax = 600;
 
 bool DetectedUser(){
     int val = digitalRead(inPin1);
@@ -84,6 +86,7 @@ void loop()
 
                 if(DetectedUser()){
                     CallUnityActorRun();
+                    unstock = 0;
                     gameStep = GameStep_Running;
                 } else {
                     Serial.println("not stay");
@@ -118,6 +121,19 @@ void loop()
                     gameStep = GameStep_Idle;
                 }
             }
+
+            // 防呆滯
+            unstock += 1;
+            if(unstock % 100 == 0){
+                Serial.print("unstock:");
+                Serial.println(unstock);
+            }
+            if(unstock > unstockMax){
+                CallUnitySceneRefresh();
+                unstock = 0;
+                gameStep = GameStep_Idle;
+            }
+
             break;
 
         default:

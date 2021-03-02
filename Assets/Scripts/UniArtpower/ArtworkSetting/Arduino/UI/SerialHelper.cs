@@ -20,7 +20,7 @@ public class SerialHelper : MonoBehaviour
     [Header("模擬測試")]
     public string messageToRecieve;
     Queue<string> queueMessage;
-    int maxQueueNum = 5;
+    int maxQueueNum = 10;
 
 
     [EasyButtons.Button("Emu Recieve")]
@@ -61,18 +61,8 @@ public class SerialHelper : MonoBehaviour
         // Debug message
         if(TXT_Debug){
             TXT_Debug.text = "";
-            arduinoInteractive.OnRecieveData += x => {
-                queueMessage.Enqueue(x);
-                if(queueMessage.Count > maxQueueNum){
-                    queueMessage.Dequeue();
-                }
-
-                TXT_Debug.text = "";
-                foreach (var item in queueMessage)
-                {
-                    TXT_Debug.text += item + "\n";
-                }
-            };
+            arduinoInteractive.OnRecieveData += DoQueueMessage;
+            arduinoInteractive.OnArduinoLogs += DoQueueMessage;
         }
 
         yield return new WaitForSeconds(10);
@@ -100,13 +90,26 @@ public class SerialHelper : MonoBehaviour
         while(true){
             yield return wait;
 
-            if(arduinoInteractive.ArduinoPortState){
+            if(arduinoInteractive.ArduinoPortIsOpen){
                 TXT_State.text = "Online";
                 TXT_State.color = Color.cyan;
             } else {
                 TXT_State.text = "Offline";
                 TXT_State.color = Color.red;
             }
+        }
+    }
+
+    void DoQueueMessage(string x){
+        queueMessage.Enqueue($"{x} ({System.DateTime.Now})");
+        if(queueMessage.Count > maxQueueNum){
+            queueMessage.Dequeue();
+        }
+
+        TXT_Debug.text = "";
+        foreach (var item in queueMessage)
+        {
+            TXT_Debug.text += item + "\n";
         }
     }
 }

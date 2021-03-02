@@ -28,13 +28,15 @@ public class ArduinoInteractive : MonoBehaviour
     [Tooltip("是否執行後就開啟相機")] public bool runInStart = false;
 
     [Header("目前參數")]
-    public bool ArduinoPortState = false;
+    [SerializeField] bool ArduinoPortState = false;
     public int baudRate = 9600;
     public string comName = "COM1";
     
 
     //public delegate
     public Action<string> OnRecieveData;
+	public Action<string> OnArduinoLogs;
+	public bool ArduinoPortIsOpen => GetArduinoPortState();
 
     //private works
     SerialPort arduinoPort;
@@ -82,11 +84,11 @@ public class ArduinoInteractive : MonoBehaviour
 			recThread = new Thread (RecieveThread);
 			recThread.Start ();
 
-			Debug.Log( $"Open port '{comName}' sucessful!!" );
+			DebugLog( $"Open port '{comName}' sucessful!!" );
 		}
 		else
 		{
-			Debug.Log( "Port already opened!!" );
+			DebugLog( "Port already opened!!" );
 			return false;
 		}
 
@@ -95,11 +97,15 @@ public class ArduinoInteractive : MonoBehaviour
 	}
 
     public void SendData(string data){
-		if(arduinoPort == null)
+		if(arduinoPort == null){
+			DebugLog(">> Can't Send (Port is null)");
 			return;
+		}
 
-		if(!arduinoPort.IsOpen)
+		if(!arduinoPort.IsOpen){
+			DebugLog(">> Can't Send (Port is disconnect)");
 			return;
+		}
         
         //因為是 WriteLine, 所以送出去的資訊會包含\n
 		arduinoPort.WriteLine(data);
@@ -148,6 +154,21 @@ public class ArduinoInteractive : MonoBehaviour
     void OnApplicationQuit() {
         CloseArduino();
     }
+
+	bool GetArduinoPortState(){
+		if(arduinoPort == null)
+			return false;
+
+		if(!arduinoPort.IsOpen)
+			return false;
+
+		return true;
+	}
+
+	void DebugLog(string msg){
+		Debug.Log(msg);
+		OnArduinoLogs?.Invoke(msg);
+	}
 }
 
 #endif
