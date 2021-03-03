@@ -15,11 +15,22 @@ int checkSensor = 0; //檢查是否站在感應器前
 // Game step
 const int GameStep_Idle = 0;
 const int GameStep_Running = 1;
+const int GameStep_Fallen = 2;
+const int GameStep_Resume_1 = 3;
+const int GameStep_Resume_2 = 4;
 
 int gameStep = 0;
 bool isHandShake = false;
 int unstock = 0;
-const int unstockMax = 600;
+const int unstockMax = 700;
+
+
+// Delay logic
+const unsigned long fallenTime = 3000;
+const unsigned long resume1_time = 30000;
+const unsigned long resume2_time = 30000;
+
+unsigned long nextDelayAt = 0;
 
 bool DetectedUser(){
     int val = digitalRead(inPin1);
@@ -73,7 +84,6 @@ void setup()
     CallUnitySceneRefresh();
 }
 
-
 void loop()
 {
     switch(gameStep)
@@ -96,44 +106,47 @@ void loop()
             break;
         
         case GameStep_Running:
-            // Start to Recieve Messages , maybe its has been queue in COM port
-            if (Serial.available() > 0)
-            {
-                // read the incoming byte:
-                incomingByte = Serial.read();
 
-                // a is actor JUMP
-                if (incomingByte == 'a')
-                {
-                    motogo();
-
-                    // will takes some time ...
-                }
-
-                // b is actor FADEOUT
-                if (incomingByte == 'b')
-                {
-                    motobcak_002();
-
-                    // will takes some time ...
-
-                    CallUnitySceneRefresh();
-                    gameStep = GameStep_Idle;
-                }
-            }
-
-            // 防呆滯
-            unstock += 1;
-            if(unstock % 100 == 0){
-                Serial.print("unstock:");
-                Serial.println(unstock);
-            }
-            if(unstock > unstockMax){
-                CallUnitySceneRefresh();
+            if(GetMessage('a')){
+                motogo();
+                nextDelayAt = millis();
                 unstock = 0;
-                gameStep = GameStep_Idle;
+                gameStep = GameStep_Fallen;
             }
 
+            break;
+
+        case GameStep_Fallen:
+            if(!WaitTime(nextDelayAt, fallenTime))
+                break;
+
+            if(GetMessage('b')){
+                motoback_step1();
+                nextDelayAt = millis();
+                unstock = 0;
+                gameStep = GameStep_Resume_1;
+            }
+            
+            break;
+
+        case GameStep_Resume_1:
+            if(!WaitTime(nextDelayAt, resume1_time))
+                break;
+
+            motoback_step2();
+            nextDelayAt = millis();
+            unstock = 0;
+            gameStep = GameStep_Resume_2;
+            
+            break;
+
+        case GameStep_Resume_2:
+            if(!WaitTime(nextDelayAt, resume2_time))
+                break;
+
+            CallUnitySceneRefresh();
+            unstock = 0;
+            gameStep = GameStep_Idle;
             break;
 
         default:
@@ -142,6 +155,22 @@ void loop()
 
     delay(100);
 
+    if(gameStep != GameStep_Idle)
+    {
+        // 防呆滯
+        unstock += 1;
+        if(unstock % 200 == 0){
+            Serial.print("unstock:");
+            Serial.println(unstock);
+        }
+        if(unstock > unstockMax){
+            ClearAllInput();
+            motoback_step1();
+
+            nextDelayAt = millis();
+            gameStep = GameStep_Resume_1;
+        }
+    }
 
     // if (playKey == 0)
     // {
@@ -222,19 +251,22 @@ void motobcak() // 馬達復位  初始時使用
     delay(30000);
 }
 
-void motobcak_002() // 當人已經衝出時的回位
-{
+
+
+void motoback_step1(){
     Serial.println("B Motor Down");
     digitalWrite(ledPin3, HIGH); //B馬達這是關閉
     digitalWrite(ledPin4, HIGH); //B馬達這是關閉
     Serial.println("A Motor Up");
     digitalWrite(ledPin1, LOW); //A馬達這是開
     digitalWrite(ledPin2, LOW); //A馬達這是開
-    delay(30000);
+}
+
+void motoback_step2() // 當人已經衝出時的回位
+{
     Serial.println("A Motor Down");
     digitalWrite(ledPin1, HIGH); //A馬達這是關閉
     digitalWrite(ledPin2, HIGH); //A馬達這是關閉
-    delay(30000);
 }
 
 void motogo() // 人衝出
@@ -242,5 +274,30 @@ void motogo() // 人衝出
     Serial.println("B Motor Up");
     digitalWrite(ledPin3, LOW); //B馬達這是開
     digitalWrite(ledPin4, LOW); //B馬達這是開
-    delay(5000);
+}
+
+bool GetMessage(char c){
+    if (Serial.available() > 0)
+    {
+        unsigned int recv = Serial.read();
+        
+        if(recv == c){
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool WaitTime(unsigned long w_base, unsigned long w_val){
+    if(millis() > w_base + w_val){
+        return true;
+    }
+    return false;
+}
+
+void ClearAllInput(){
+    while(Serial.available() > 0){
+        unsigned int r = Serial.read();
+    }
 }
