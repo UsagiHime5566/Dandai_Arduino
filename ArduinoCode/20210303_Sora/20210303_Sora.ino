@@ -164,6 +164,7 @@ void loop()
             Serial.println(unstock);
         }
         if(unstock > unstockMax){
+            unstock = 0;
             ClearAllInput();
             motoback_step1();
 

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO.Ports;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Networking;
 using UnityEngine.UI;
 
 [RequireComponent(typeof(ArduinoInteractive))]
@@ -16,6 +17,8 @@ public class SerialHelper : MonoBehaviour
     public Button BTN_Restart;
     public Text TXT_State;
     public Text TXT_Debug;
+    public string googleSheetUrl;
+    public string postId;
 
     [Header("模擬測試")]
     public string messageToRecieve;
@@ -65,6 +68,10 @@ public class SerialHelper : MonoBehaviour
             arduinoInteractive.OnArduinoLogs += DoQueueMessage;
         }
 
+        //post to google
+        arduinoInteractive.OnRecieveData += SendToGoogle;
+        arduinoInteractive.OnArduinoLogs += SendToGoogle;
+
         yield return new WaitForSeconds(10);
 
         arduinoInteractive.StartSerial();
@@ -110,6 +117,30 @@ public class SerialHelper : MonoBehaviour
         foreach (var item in queueMessage)
         {
             TXT_Debug.text += item + "\n";
+        }
+    }
+
+    public void SendToGoogle(string msg){
+        StartCoroutine(PostTool(msg));
+    }
+
+    IEnumerator PostTool(string msg){
+        WWWForm form = new WWWForm();
+        form.AddField("entry." + postId, msg);   //Copy from google form origin html code
+
+        using (UnityWebRequest www = UnityWebRequest.Post(googleSheetUrl, form))
+        {
+            yield return www.SendWebRequest();
+
+            if (www.isNetworkError || www.isHttpError)
+            {
+                Debug.Log(www.error);
+            }
+            else
+            {
+                //Debug.Log("Form upload complete!");
+                //Debug.Log(www.downloadHandler.text);
+            }
         }
     }
 }

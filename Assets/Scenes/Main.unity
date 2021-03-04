@@ -1937,6 +1937,8 @@ MonoBehaviour:
   BTN_Restart: {fileID: 2952687675102125867}
   TXT_State: {fileID: 1605407957}
   TXT_Debug: {fileID: 1869436063}
+  googleSheetUrl: https://docs.google.com/forms/u/0/d/e/1FAIpQLSfBh5m7hfSbyPOfKKwZv8CSVh310HQJqhU8gnMDi4GfQqzYdg/formResponse
+  postId: 2106866813
   messageToRecieve: 
 --- !u!114 &1379167738
 MonoBehaviour:
